@@ -19,11 +19,10 @@ function More(options) {
 	/**
 	 *
 	 */
-	if (options.client instanceof mongodb.MongoClient) {
-		this.client = options.client;
-	} else {
-		this.client = new mongodb.MongoClient(options.client);
+	if (!(options.db instanceof mongodb.Db)) {
+		throw new TypeError('"options.db" must be instance of "mongodb.Db"');
 	}
+	this.db = options.db;
 	this.clearStats();
 }
 /**
@@ -33,7 +32,7 @@ function More(options) {
  * @param callback
  */
 More.prototype.has = function (key, field, callback) {
-	this.client.collection(key).findOne({_id: new mongodb.ObjectId(field)}, (err, value) => {
+	this.db.collection(key).findOne({_id: new mongodb.ObjectId(field)}, (err, value) => {
 		callback(null, !(err || value === null));
 	});
 };
@@ -44,7 +43,7 @@ More.prototype.has = function (key, field, callback) {
  * @param callback
  */
 More.prototype.get = function (key, field, callback) {
-	this.client.collection(key).findOne({_id: new mongodb.ObjectId(field)}, (err, value) => {
+	this.db.collection(key).findOne({_id: new mongodb.ObjectId(field)}, (err, value) => {
 		if (!err && value !== null) {
 			this.stats.hits++;
 			return callback(null, value);
