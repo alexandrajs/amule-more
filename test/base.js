@@ -7,16 +7,16 @@ const AMule = require('amule');
 const More = require('../');
 const assert = require('assert');
 const mongodb = require('mongodb');
-const MongoClient = new mongodb.MongoClient;
+const MongoClient = mongodb.MongoClient;
 let db;
 const ObjectID = mongodb.ObjectID;
 describe('Base', () => {
 	before((done) => {
-		MongoClient.connect('mongodb://localhost:27017/amule_more_test_db', (err, _db) => {
+		MongoClient.connect('mongodb://localhost:27017/amule_more_test_db', {}, (err, client) => {
 			if (err) {
 				return done(err);
 			}
-			db = _db;
+			db = client.db('amule_more_test_db');
 			done();
 		});
 	});
