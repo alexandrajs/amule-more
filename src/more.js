@@ -111,7 +111,7 @@ More.prototype.clear = function (propagate, callback) {
 };
 /**
  * @param [clear]
- * @returns {{hits: number, misses: number, ratio: number}}
+ * @returns {Object}
  */
 More.prototype.getStats = function (clear) {
 	const stats = this.stats;
