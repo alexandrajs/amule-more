@@ -1,15 +1,16 @@
-'use strict';
+"use strict";
 /**
  * @author Michał Żaloudik <ponury.kostek@gmail.com>
  */
-const mongodb = require('mongodb');
+const mongodb = require("mongodb");
+
 /**
  *
  * @constructor
  */
 function More(options) {
-	if (typeof options !== 'object' || options === null) {
-		options = {prefix: ''};
+	if (typeof options !== "object" || options === null) {
+		options = {prefix: ""};
 	}
 	/**
 	 *
@@ -20,11 +21,12 @@ function More(options) {
 	 *
 	 */
 	if (!(options.db instanceof mongodb.Db)) {
-		throw new TypeError('"options.db" must be instance of "mongodb.Db"');
+		throw new TypeError("'options.db' must be instance of 'mongodb.Db'");
 	}
 	this.db = options.db;
 	this.clearStats();
 }
+
 /**
  *
  * @param key
@@ -98,7 +100,7 @@ More.prototype.delete = function (key, field, callback) {
  * @todo implement
  */
 More.prototype.clear = function (propagate, callback) {
-	if (typeof propagate === 'function') {
+	if (typeof propagate === "function") {
 		callback = propagate;
 		propagate = undefined;
 	}
