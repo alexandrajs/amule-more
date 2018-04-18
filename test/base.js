@@ -9,16 +9,21 @@ const assert = require("assert");
 const mongodb = require("mongodb");
 const MongoClient = mongodb.MongoClient;
 let db;
+let client;
 const ObjectID = mongodb.ObjectID;
 describe("Base", () => {
 	before((done) => {
-		MongoClient.connect("mongodb://localhost:27017/amule_more_test_db", {}, (err, client) => {
+		MongoClient.connect("mongodb://localhost:27017/amule_more_test_db", {}, (err, _client) => {
 			if (err) {
 				return done(err);
 			}
+			client = _client;
 			db = client.db("amule_more_test_db");
 			done();
 		});
+	});
+	after(async () => {
+		await client.close();
 	});
 	describe("More", () => {
 		beforeEach((done) => {
