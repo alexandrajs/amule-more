@@ -11,6 +11,5 @@ before_script:
   - mongo admin --eval 'db.adminCommand( { setFeatureCompatibilityVersion:"3.6" } )'
 language: node_js
 node_js:
-  - 6
   - 8
   - 9

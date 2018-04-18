@@ -16,6 +16,9 @@
   ],
   "author": "Michał Żaloudik <ponury.kostek@gmail.com>",
   "license": "ISC",
+  "engines": {
+    "node": ">=8.0.0"
+  },
   "dependencies": {
     "mongodb": "^3.0.7"
   },
