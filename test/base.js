@@ -33,7 +33,7 @@ describe("Base", () => {
 		});
 		it("has", (done) => {
 			let mule = new AMule();
-			mule.use(new More({db: db}));
+			mule.use(new More(db));
 			mule.has("key", "000000000000000000000000", function (err, has) {
 				assert.strictEqual(err, null);
 				assert.strictEqual(has, false);
@@ -51,9 +51,9 @@ describe("Base", () => {
 				});
 			});
 		});
-		it("set", (done) => {
+		it("set with readOnly:true", (done) => {
 			let mule = new AMule();
-			mule.use(new More({db: db}));
+			mule.use(new More(db));
 			mule.set("key", "000000000000000000000000", "value", (err) => {
 				assert.strictEqual(err, null);
 				mule.has("key", "000000000000000000000000", (err, has) => {
@@ -63,9 +63,21 @@ describe("Base", () => {
 				});
 			});
 		});
+		it("set", (done) => {
+			let mule = new AMule();
+			mule.use(new More(db, {readOnly: false}));
+			mule.set("key", "000000000000000000000000", {value:"value"}, (err) => {
+				assert.strictEqual(err, null);
+				mule.has("key", "000000000000000000000000", (err, has) => {
+					assert.strictEqual(err, null);
+					assert.strictEqual(has, true);
+					done();
+				});
+			});
+		});
 		it("get", (done) => {
 			let mule = new AMule();
-			mule.use(new More({db: db}));
+			mule.use(new More(db));
 			mule.has("key", "000000000000000000000000", function (err, has) {
 				assert.strictEqual(err, null);
 				assert.strictEqual(has, false);
@@ -86,9 +98,9 @@ describe("Base", () => {
 				});
 			});
 		});
-		it("delete", (done) => {
+		it("delete with readOnly:true", (done) => {
 			let mule = new AMule();
-			mule.use(new More({db: db}));
+			mule.use(new More(db));
 			db.collection("key", (err, col) => {
 				if (err) {
 					return done(err);
@@ -112,9 +124,35 @@ describe("Base", () => {
 				}).catch(done);
 			});
 		});
-		it("clear", (done) => {
+		it("delete", (done) => {
 			let mule = new AMule();
-			mule.use(new More({db: db}));
+			mule.use(new More(db, {readOnly: false}));
+			db.collection("key", (err, col) => {
+				if (err) {
+					return done(err);
+				}
+				col.insertOne({
+					_id: ObjectID("000000000000000000000000"),
+					v: "value"
+				}).then(() => {
+					mule.has("key", "000000000000000000000000", (err, has) => {
+						assert.strictEqual(err, null);
+						assert.strictEqual(has, true);
+						mule.delete("key", "000000000000000000000000", function (err) {
+							assert.strictEqual(err, null);
+							mule.has("key", "000000000000000000000000", (err, has) => {
+								assert.strictEqual(err, null);
+								assert.strictEqual(has, false);
+								done();
+							});
+						});
+					});
+				}).catch(done);
+			});
+		});
+		it("clear with readOnly:true", (done) => {
+			let mule = new AMule();
+			mule.use(new More(db));
 			db.collection("key", (err, col) => {
 				if (err) {
 					return done(err);
@@ -138,9 +176,35 @@ describe("Base", () => {
 				}).catch(done);
 			});
 		});
+		it("clear", (done) => {
+			let mule = new AMule();
+			mule.use(new More(db, {readOnly: false}));
+			db.collection("key", (err, col) => {
+				if (err) {
+					return done(err);
+				}
+				col.insertOne({
+					_id: ObjectID("000000000000000000000000"),
+					v: "value"
+				}).then(() => {
+					mule.has("key", "000000000000000000000000", (err, has) => {
+						assert.strictEqual(err, null);
+						assert.strictEqual(has, true);
+						mule.clear(function (err) {
+							assert.strictEqual(err, null);
+							mule.has("key", "000000000000000000000000", (err, has) => {
+								assert.strictEqual(err, null);
+								assert.strictEqual(has, false);
+								done();
+							});
+						});
+					});
+				}).catch(done);
+			});
+		});
 		it("stats", (done) => {
 			let mule = new AMule();
-			const more = new More({db: db});
+			const more = new More(db);
 			mule.use(more);
 			mule.get("key", "000000000000000000000000", function (err, value) {
 				assert.strictEqual(err, null);
