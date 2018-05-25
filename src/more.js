@@ -11,8 +11,8 @@ class More extends Layer {
 		/**
 		 *
 		 */
-		if (!(db instanceof mongodb.Db)) {
-			throw new TypeError("'options.db' must be instance of 'mongodb.Db'");
+		if (!db) {
+			throw new TypeError("'db' must be instance of 'mongodb.Db'");
 		}
 		this.options = Object.assign({
 			enforceObjectID: true,
