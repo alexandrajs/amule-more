@@ -6,6 +6,13 @@ const Layer = require("amule").Layer;
 const mongodb = require("mongodb");
 
 class More extends Layer {
+	/**
+	 *
+	 * @param {mongodb.Db} db
+	 * @param {Object} [options]
+	 * @param {boolean} options.enforceObjectID
+	 * @param {boolean} options.readOnly
+	 */
 	constructor(db, options) {
 		super();
 		/**
@@ -23,9 +30,9 @@ class More extends Layer {
 
 	/**
 	 *
-	 * @param key
-	 * @param field
-	 * @param callback
+	 * @param {string} key
+	 * @param {string} field
+	 * @param {function} callback
 	 */
 	_has(key, field, callback) {
 		this.db.collection(key).findOne({_id: this.options.enforceObjectID ? new mongodb.ObjectId(field) : field}, (err, value) => {
@@ -35,9 +42,9 @@ class More extends Layer {
 
 	/**
 	 *
-	 * @param key
-	 * @param field
-	 * @param callback
+	 * @param {string} key
+	 * @param {string} field
+	 * @param {function} callback
 	 */
 	_get(key, field, callback) {
 		this.db.collection(key).findOne({_id: this.options.enforceObjectID ? new mongodb.ObjectId(field) : field}, callback);
@@ -45,10 +52,10 @@ class More extends Layer {
 
 	/**
 	 *
-	 * @param key
-	 * @param field
-	 * @param value
-	 * @param callback
+	 * @param {string} key
+	 * @param {string} field
+	 * @param {*} value
+	 * @param {function} callback
 	 */
 	_set(key, field, value, callback) {
 		if (this.options.readOnly) {
@@ -59,9 +66,9 @@ class More extends Layer {
 
 	/**
 	 *
-	 * @param key
-	 * @param field
-	 * @param callback
+	 * @param {string} key
+	 * @param {string} field
+	 * @param {function} callback
 	 */
 	_delete(key, field, callback) {
 		if (this.options.readOnly) {
@@ -71,7 +78,7 @@ class More extends Layer {
 	}
 
 	/**
-	 * @param callback
+	 * @param {function} callback
 	 */
 	_clear(callback) {
 		if (this.options.readOnly) {
