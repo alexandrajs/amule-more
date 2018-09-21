@@ -10,8 +10,8 @@ class More extends Layer {
 	 *
 	 * @param {mongodb.Db} db
 	 * @param {Object} [options]
-	 * @param {boolean} options.enforceObjectID
-	 * @param {boolean} options.readOnly
+	 * @param {boolean} [options.enforceObjectID]
+	 * @param {boolean} [options.readOnly]
 	 */
 	constructor(db, options) {
 		super();
@@ -22,7 +22,7 @@ class More extends Layer {
 			throw new TypeError("'db' must be instance of 'mongodb.Db'");
 		}
 		this.options = Object.assign({
-			enforceObjectID: true,
+			enforceObjectID: false,
 			readOnly: true
 		}, options || {});
 		this.db = db;
