@@ -1,6 +1,6 @@
 {
   "name": "amule-more",
-  "version": "0.2.2",
+  "version": "0.2.3",
   "description": "MongoDB layer for AlexandraJS aMule",
   "main": "index.js",
   "scripts": {
@@ -20,19 +20,19 @@
     "node": ">=8.0.0"
   },
   "peerDependencies": {
-    "mongodb": "^3.0.8",
+    "mongodb": "^6.9.0",
     "amule": "^0.2.4"
   },
   "devDependencies": {
-    "amule": "^0.2.5",
-    "benchmark": "^2.1.3",
-    "coveralls": "^3.0.2",
+    "amule": "^0.2.6",
+    "benchmark": "^2.1.4",
+    "coveralls": "^3.1.1",
     "ink-docstrap": "^1.3.2",
     "istanbul": "^0.4.5",
-    "jsdoc": "^3.5.5",
-    "mocha": "^5.2.0",
+    "jsdoc": "^4.0.4",
+    "mocha": "^10.7.3",
     "mocha-lcov-reporter": "^1.3.0",
-    "mongodb": "^3.1.10"
+    "mongodb": "^6.9.0"
   },
   "repository": {
     "type": "git",
