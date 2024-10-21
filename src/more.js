@@ -10,7 +10,7 @@ class More extends Layer {
 	 *
 	 * @param {mongodb.Db} db
 	 * @param {Object} [options]
-	 * @param {boolean} [options.enforceObjectID]
+	 * @param {boolean} [options.enforceObjectId]
 	 * @param {boolean} [options.readOnly]
 	 */
 	constructor(db, options) {
@@ -22,7 +22,7 @@ class More extends Layer {
 			throw new TypeError("'db' must be instance of 'mongodb.Db'");
 		}
 		this.options = Object.assign({
-			enforceObjectID: false,
+			enforceObjectId: false,
 			readOnly: true
 		}, options || {});
 		this.db = db;
@@ -35,9 +35,9 @@ class More extends Layer {
 	 * @param {function} callback
 	 */
 	_has(key, field, callback) {
-		this.db.collection(key).findOne({_id: this.options.enforceObjectID ? new mongodb.ObjectId(field) : field}, (err, value) => {
-			callback(null, !!(!err && value));
-		});
+		this.db.collection(key)
+			.findOne({_id: this.options.enforceObjectId ? new mongodb.ObjectId(field) : field})
+			.then((value) => callback(null, !!(value))).catch(() => callback(null, false));
 	}
 
 	/**
@@ -47,7 +47,9 @@ class More extends Layer {
 	 * @param {function} callback
 	 */
 	_get(key, field, callback) {
-		this.db.collection(key).findOne({_id: this.options.enforceObjectID ? new mongodb.ObjectId(field) : field}, callback);
+		this.db.collection(key)
+			.findOne({_id: this.options.enforceObjectId ? new mongodb.ObjectId(field) : field})
+			.then((res) => callback(null, res)).catch(callback);
 	}
 
 	/**
@@ -61,7 +63,9 @@ class More extends Layer {
 		if (this.options.readOnly) {
 			return callback(null, false);
 		}
-		this.db.collection(key).replaceOne({_id: this.options.enforceObjectID ? new mongodb.ObjectId(field) : field}, value, {upsert: true}, callback);
+		this.db.collection(key)
+			.replaceOne({_id: this.options.enforceObjectId ? new mongodb.ObjectId(field) : field}, value, {upsert: true})
+			.then((res) => callback(null, res)).catch(callback);
 	}
 
 	/**
@@ -74,7 +78,9 @@ class More extends Layer {
 		if (this.options.readOnly) {
 			return callback(null, false);
 		}
-		this.db.collection(key).deleteOne({_id: this.options.enforceObjectID ? new mongodb.ObjectId(field) : field}, callback);
+		this.db.collection(key)
+			.deleteOne({_id: this.options.enforceObjectId ? new mongodb.ObjectId(field) : field})
+			.then((res) => callback(null, res)).catch(callback);
 	}
 
 	/**
@@ -84,7 +90,8 @@ class More extends Layer {
 		if (this.options.readOnly) {
 			return callback(null, false);
 		}
-		this.db.dropDatabase(callback);
+		this.db.dropDatabase()
+			.then((res) => callback(null, res)).catch(callback);
 	}
 }
 

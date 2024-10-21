@@ -13,50 +13,45 @@ let client;
 [
 	false,
 	true
-].forEach((enforceObjectID) => {
-	const ObjectID = enforceObjectID ? mongodb.ObjectID : _ => _;
-	describe("CRUD " + JSON.stringify({enforceObjectID}), () => {
+].forEach((enforceObjectId) => {
+	const getId = enforceObjectId ? (id) => new mongodb.ObjectId(id) : _ => _;
+	describe("CRUD " + JSON.stringify({enforceObjectId}), () => {
 		before((done) => {
-			MongoClient.connect("mongodb://localhost:27017/amule_more_test_db", {}, (err, _client) => {
-				if (err) {
-					return done(err);
-				}
+			MongoClient.connect("mongodb://localhost:27017/admin", {auth:{password:'root', username:"root"}}).then((_client) => {
 				client = _client;
 				db = client.db("amule_more_test_db");
 				done();
+			}).catch((e)=>{
+				console.log(e);done(e)
 			});
 		});
 		after(async () => {
 			await client.close();
 		});
 		beforeEach((done) => {
-			db.dropDatabase(() => {
-				done();
-			});
+			db.dropDatabase().finally(done);
 		});
 		it("has", (done) => {
 			let mule = new AMule();
-			mule.use(new More(db, {enforceObjectID}));
+			mule.use(new More(db, {enforceObjectId}));
 			mule.has("key", "000000000000000000000000", function (err, has) {
 				assert.strictEqual(err, null);
 				assert.strictEqual(has, false);
-				db.collection("key", (err, col) => {
-					if (err) {
-						return done(err);
-					}
-					col.insertOne({_id: ObjectID("000000000000000000000000")}).then(() => {
-						mule.has("key", "000000000000000000000000", function (err, has) {
-							assert.strictEqual(err, null);
-							assert.strictEqual(has, true);
-							done();
-						});
-					}).catch(done);
-				});
+
+				const col = db.collection("key");
+
+				col.insertOne({_id: getId("000000000000000000000000")}).then(() => {
+					mule.has("key", "000000000000000000000000", function (err, has) {
+						assert.strictEqual(err, null);
+						assert.strictEqual(has, true);
+						done();
+					});
+				}).catch(done);
 			});
 		});
 		it("set with readOnly:true", (done) => {
 			let mule = new AMule();
-			mule.use(new More(db, {enforceObjectID}));
+			mule.use(new More(db, {enforceObjectId}));
 			mule.set("key", "000000000000000000000000", "value", (err) => {
 				assert.strictEqual(err, null);
 				mule.has("key", "000000000000000000000000", (err, has) => {
@@ -70,7 +65,7 @@ let client;
 			let mule = new AMule();
 			mule.use(new More(db, {
 				readOnly: false,
-				enforceObjectID
+				enforceObjectId
 			}));
 			mule.set("key", "000000000000000000000000", {value: "value"}, (err) => {
 				assert.strictEqual(err, null);
@@ -83,140 +78,120 @@ let client;
 		});
 		it("get", (done) => {
 			let mule = new AMule();
-			mule.use(new More(db, {enforceObjectID}));
+			mule.use(new More(db, {enforceObjectId}));
 			mule.has("key", "000000000000000000000000", function (err, has) {
 				assert.strictEqual(err, null);
 				assert.strictEqual(has, false);
-				db.collection("key", (err, col) => {
-					if (err) {
-						return done(err);
-					}
-					col.insertOne({
-						_id: ObjectID("000000000000000000000000"),
-						v: "value"
-					}).then(() => {
-						mule.get("key", "000000000000000000000000", function (err, res) {
-							assert.strictEqual(err, null);
-							assert.strictEqual(res.v, "value");
-							done();
-						});
-					}).catch(done);
-				});
+				const col = db.collection("key");
+				col.insertOne({
+					_id: getId("000000000000000000000000"),
+					v: "value"
+				}).then(() => {
+					mule.get("key", "000000000000000000000000", function (err, res) {
+						assert.strictEqual(err, null);
+						assert.strictEqual(res.v, "value");
+						done();
+					});
+				}).catch(done);
 			});
 		});
 		it("delete with readOnly:true", (done) => {
 			let mule = new AMule();
-			mule.use(new More(db, {enforceObjectID}));
-			db.collection("key", (err, col) => {
-				if (err) {
-					return done(err);
-				}
-				col.insertOne({
-					_id: ObjectID("000000000000000000000000"),
-					v: "value"
-				}).then(() => {
-					mule.has("key", "000000000000000000000000", (err, has) => {
+			mule.use(new More(db, {enforceObjectId}));
+			const col = db.collection("key");
+			col.insertOne({
+				_id: getId("000000000000000000000000"),
+				v: "value"
+			}).then(() => {
+				mule.has("key", "000000000000000000000000", (err, has) => {
+					assert.strictEqual(err, null);
+					assert.strictEqual(has, true);
+					mule.delete("key", "000000000000000000000000", function (err) {
 						assert.strictEqual(err, null);
-						assert.strictEqual(has, true);
-						mule.delete("key", "000000000000000000000000", function (err) {
+						mule.has("key", "000000000000000000000000", (err, has) => {
 							assert.strictEqual(err, null);
-							mule.has("key", "000000000000000000000000", (err, has) => {
-								assert.strictEqual(err, null);
-								assert.strictEqual(has, true);
-								done();
-							});
+							assert.strictEqual(has, true);
+							done();
 						});
 					});
-				}).catch(done);
-			});
+				});
+			}).catch(done);
 		});
-		it("delete", (done) => {
+		it("delete", () => {
 			let mule = new AMule();
 			mule.use(new More(db, {
 				readOnly: false,
-				enforceObjectID
+				enforceObjectId
 			}));
-			db.collection("key", (err, col) => {
-				if (err) {
-					return done(err);
-				}
-				col.insertOne({
-					_id: ObjectID("000000000000000000000000"),
-					v: "value"
-				}).then(() => {
-					mule.has("key", "000000000000000000000000", (err, has) => {
+			const col = db.collection("key");
+			return col.insertOne({
+				_id: getId("000000000000000000000000"),
+				v: "value"
+			}).then(() => {
+				mule.has("key", "000000000000000000000000", (err, has) => {
+					assert.strictEqual(err, null);
+					assert.strictEqual(has, true);
+					mule.delete("key", "000000000000000000000000", function (err) {
 						assert.strictEqual(err, null);
-						assert.strictEqual(has, true);
-						mule.delete("key", "000000000000000000000000", function (err) {
+						mule.has("key", "000000000000000000000000", (err, has) => {
 							assert.strictEqual(err, null);
-							mule.has("key", "000000000000000000000000", (err, has) => {
-								assert.strictEqual(err, null);
-								assert.strictEqual(has, false);
-								done();
-							});
+							assert.strictEqual(has, false);
+
 						});
 					});
-				}).catch(done);
+				});
 			});
 		});
 		it("clear with readOnly:true", (done) => {
 			let mule = new AMule();
-			mule.use(new More(db, {enforceObjectID}));
-			db.collection("key", (err, col) => {
-				if (err) {
-					return done(err);
-				}
-				col.insertOne({
-					_id: ObjectID("000000000000000000000000"),
-					v: "value"
-				}).then(() => {
-					mule.has("key", "000000000000000000000000", (err, has) => {
+			mule.use(new More(db, {enforceObjectId}));
+			const col = db.collection("key");
+			col.insertOne({
+				_id: getId("000000000000000000000000"),
+				v: "value"
+			}).then(() => {
+				mule.has("key", "000000000000000000000000", (err, has) => {
+					assert.strictEqual(err, null);
+					assert.strictEqual(has, true);
+					mule.clear(function (err) {
 						assert.strictEqual(err, null);
-						assert.strictEqual(has, true);
-						mule.clear(function (err) {
+						mule.has("key", "000000000000000000000000", (err, has) => {
 							assert.strictEqual(err, null);
-							mule.has("key", "000000000000000000000000", (err, has) => {
-								assert.strictEqual(err, null);
-								assert.strictEqual(has, true);
-								done();
-							});
+							assert.strictEqual(has, true);
+							done();
 						});
 					});
-				}).catch(done);
-			});
+				});
+			}).catch(done);
 		});
 		it("clear", (done) => {
 			let mule = new AMule();
 			mule.use(new More(db, {
 				readOnly: false,
-				enforceObjectID
+				enforceObjectId
 			}));
-			db.collection("key", (err, col) => {
-				if (err) {
-					return done(err);
-				}
-				col.insertOne({
-					_id: ObjectID("000000000000000000000000"),
-					v: "value"
-				}).then(() => {
-					mule.has("key", "000000000000000000000000", (err, has) => {
+			const col = db.collection("key");
+			col.insertOne({
+				_id: getId("000000000000000000000000"),
+				v: "value"
+			}).then(() => {
+				mule.has("key", "000000000000000000000000", (err, has) => {
+					assert.strictEqual(err, null);
+					assert.strictEqual(has, true);
+					mule.clear(function (err) {
 						assert.strictEqual(err, null);
-						assert.strictEqual(has, true);
-						mule.clear(function (err) {
+						mule.has("key", "000000000000000000000000", (err, has) => {
 							assert.strictEqual(err, null);
-							mule.has("key", "000000000000000000000000", (err, has) => {
-								assert.strictEqual(err, null);
-								assert.strictEqual(has, false);
-								done();
-							});
+							assert.strictEqual(has, false);
+							done();
 						});
 					});
-				}).catch(done);
-			});
+				});
+			}).catch(done);
 		});
 		it("stats", (done) => {
 			let mule = new AMule();
-			const more = new More(db, {enforceObjectID});
+			const more = new More(db, {enforceObjectId});
 			mule.use(more);
 			mule.get("key", "000000000000000000000000", function (err, value) {
 				assert.strictEqual(err, null);
@@ -225,30 +200,26 @@ let client;
 				assert.strictEqual(stats.misses, 1);
 				assert.strictEqual(stats.ratio, 0);
 				assert.strictEqual(stats.hits, 0);
-				db.collection("key", (err, col) => {
-					if (err) {
-						return done(err);
-					}
-					col.insertOne({
-						_id: ObjectID("000000000000000000000000"),
-						v: "value"
-					}).then(() => {
+				const col = db.collection("key");
+				col.insertOne({
+					_id: getId("000000000000000000000000"),
+					v: "value"
+				}).then(() => {
+					assert.strictEqual(err, null);
+					mule.get("key", "000000000000000000000000", function (err, val) {
 						assert.strictEqual(err, null);
-						mule.get("key", "000000000000000000000000", function (err, val) {
-							assert.strictEqual(err, null);
-							assert.strictEqual(val.v, "value");
-							let stats = more.getStats(true);
-							assert.strictEqual(stats.misses, 1);
-							assert.strictEqual(stats.ratio, 0.5);
-							assert.strictEqual(stats.hits, 1);
-							stats = more.getStats();
-							assert.strictEqual(stats.misses, 0);
-							assert(Number.isNaN(stats.ratio));
-							assert.strictEqual(stats.hits, 0);
-							done();
-						});
-					}).catch(done);
-				});
+						assert.strictEqual(val.v, "value");
+						let stats = more.getStats(true);
+						assert.strictEqual(stats.misses, 1);
+						assert.strictEqual(stats.ratio, 0.5);
+						assert.strictEqual(stats.hits, 1);
+						stats = more.getStats();
+						assert.strictEqual(stats.misses, 0);
+						assert(Number.isNaN(stats.ratio));
+						assert.strictEqual(stats.hits, 0);
+						done();
+					});
+				}).catch(done);
 			});
 		});
 	});
